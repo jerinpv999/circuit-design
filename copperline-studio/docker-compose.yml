@@ -1,0 +1,50 @@
+# Copperline Studio
+#
+#   docker compose up -d --build          # build and run at http://localhost:7777
+#   docker compose --profile dev up dev   # live-edit mode at http://localhost:7778 (serves ./ directly)
+#   docker compose --profile test run --rm tests   # run the engine test suite
+#   docker compose down                   # stop
+#
+# Change ports with COPPERLINE_PORT / COPPERLINE_DEV_PORT (see .env.example).
+
+services:
+  copperline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: copperline-studio:latest
+    container_name: copperline-studio
+    ports:
+      - "${COPPERLINE_PORT:-7777}:80"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Development: edits to index.html and src/*.js show on browser refresh.
+  # Loads React/Three.js from the CDNs, so it needs internet access.
+  dev:
+    profiles: ["dev"]
+    image: nginx:1.27-alpine
+    container_name: copperline-dev
+    ports:
+      - "${COPPERLINE_DEV_PORT:-7778}:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+  # Engine tests (simulator, MCU runtime, autorouter, DRC, exporters)
+  tests:
+    profiles: ["test"]
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app:ro
+    command: ["node", "tests/run-tests.js"]

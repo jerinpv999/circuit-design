@@ -1,0 +1,8 @@
+.git
+node_modules
+*.zip
+.env
+docs
+skill
+docker-compose.yml
+.dockerignore

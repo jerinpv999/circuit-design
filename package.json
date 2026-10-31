@@ -1,0 +1,11 @@
+{
+  "name": "copperline-studio",
+  "version": "1.0.0",
+  "description": "Browser EDA suite: schematic capture, circuit and microcontroller simulation, PCB layout, 3D view and Gerber export.",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve -l 7777 .",
+    "test": "node tests/run-tests.js"
+  },
+  "engines": { "node": ">=18" }
+}
